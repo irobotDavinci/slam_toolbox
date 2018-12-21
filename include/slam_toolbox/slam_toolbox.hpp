@@ -58,9 +58,7 @@
 #include <queue>
 #include <cstdlib>
 #include <fstream>
-#include <sys/time.h>
 #include <sys/resource.h>
-#include <utility>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
