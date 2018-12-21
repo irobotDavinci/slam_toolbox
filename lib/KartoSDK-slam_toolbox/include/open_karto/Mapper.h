@@ -686,7 +686,7 @@ namespace karto
      * @param pScan
      * @param rSensorName
      */
-    kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName);
+    kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName, kt_bool continuedMapping);
 
     /**
      * Optimizes scan poses
@@ -784,7 +784,7 @@ namespace karto
      */
     LocalizedRangeScanVector FindPossibleLoopClosure(LocalizedRangeScan* pScan,
                                                      const Name& rSensorName,
-                                                     kt_int32u& rStartNum);
+                                                     kt_int32u& rStartNum, bool continuedMapping);
 
   private:
     /**
@@ -1777,7 +1777,7 @@ namespace karto
      *
      * @return true if the scan was added successfully, false otherwise
      */
-    virtual kt_bool Process(LocalizedRangeScan* pScan);
+    virtual kt_bool Process(LocalizedRangeScan* pScan, kt_bool continueMapping);
 
     /**
      * Process an Object
@@ -1842,9 +1842,9 @@ namespace karto
      * @param pScan
      * @param rSensorName
      */
-    inline kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName)
+    inline kt_bool TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName, bool continuedMapping)
     {
-      return m_pGraph->TryCloseLoop(pScan, rSensorName);
+      return m_pGraph->TryCloseLoop(pScan, rSensorName, continuedMapping);
     }
 
     inline void CorrectPoses()

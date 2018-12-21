@@ -58,10 +58,14 @@
 #include <queue>
 #include <cstdlib>
 #include <fstream>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <utility>
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/serialization/vector.hpp>
+
 
 // compute linear index for given map coords
 #define MAP_IDX(sx, i, j) ((sx) * (j) + (i))
@@ -180,4 +184,6 @@ private:
   // pluginlib
   pluginlib::ClassLoader<karto::ScanSolver> solver_loader_;
   boost::shared_ptr<karto::ScanSolver> solver_;
+
+  bool continue_mapping_;
 };

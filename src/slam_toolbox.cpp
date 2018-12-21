@@ -260,6 +260,7 @@ void SlamToolbox::SetParams(ros::NodeHandle& private_nh_)
   bool use_response_expansion;
   if(private_nh_.getParam("use_response_expansion", use_response_expansion))
     mapper_->setParamUseResponseExpansion(use_response_expansion);
+  continue_mapping_ = false;
 }
 
 /*****************************************************************************/
@@ -825,7 +826,7 @@ bool SlamToolbox::AddScan(karto::LaserRangeFinder* laser,
   // Add the localized range scan to the mapper
   boost::mutex::scoped_lock lock(mapper_mutex_);
   bool processed;
-  if((processed = mapper_->Process(range_scan)))
+  if((processed = mapper_->Process(range_scan, continue_mapping_)))
   {
     current_scans_.push_back(*scan);
     karto::Pose2 corrected_pose = range_scan->GetCorrectedPose();
@@ -1118,6 +1119,8 @@ void SlamToolbox::Run()
       }
 
       AddScan(laser, scan_w_pose.scan, scan_w_pose.pose);
+      if (continue_mapping_)
+        continue_mapping_ = !continue_mapping_;
       continue; // no need to sleep if working
     }
     r.sleep();
@@ -1208,6 +1211,7 @@ bool SlamToolbox::LoadMapperCallback(slam_toolbox::AddMap::Request  &req,
     }
   }
   UpdateMap();
+  continue_mapping_ = true;
 }
 
 /*****************************************************************************/
@@ -1215,10 +1219,6 @@ int main(int argc, char** argv)
 /*****************************************************************************/
 {
   ros::init(argc, argv, "slam_toolbox");
-  ros::NodeHandle nh;
-//  int max_stack_size_int;
-//  nh.getParam("max_stack_size", max_stack_size_int);
-//  const rlim_t max_stack_size = std::as_const(max_stack_size_int);
   const rlim_t max_stack_size = 16777216;
   struct rlimit stack_limit;
   getrlimit(RLIMIT_STACK, &stack_limit);

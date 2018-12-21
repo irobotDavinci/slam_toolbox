@@ -1295,13 +1295,13 @@ namespace karto
     }
   }
 
-  kt_bool MapperGraph::TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName)
+  kt_bool MapperGraph::TryCloseLoop(LocalizedRangeScan* pScan, const Name& rSensorName, bool continuedMapping)
   {
     kt_bool loopClosed = false;
 
     kt_int32u scanIndex = 0;
 
-    LocalizedRangeScanVector candidateChain = FindPossibleLoopClosure(pScan, rSensorName, scanIndex);
+      LocalizedRangeScanVector candidateChain = FindPossibleLoopClosure(pScan, rSensorName, scanIndex, continuedMapping);
 
     while (!candidateChain.empty())
     {
@@ -1355,7 +1355,7 @@ namespace karto
         }
       }
 
-      candidateChain = FindPossibleLoopClosure(pScan, rSensorName, scanIndex);
+      candidateChain = FindPossibleLoopClosure(pScan, rSensorName, scanIndex, continuedMapping);
     }
 
     return loopClosed;
@@ -1621,8 +1621,8 @@ namespace karto
 
   LocalizedRangeScanVector MapperGraph::FindPossibleLoopClosure(LocalizedRangeScan* pScan,
                                                                 const Name& rSensorName,
-                                                                kt_int32u& rStartNum)
-  {
+                                                                kt_int32u& rStartNum, bool continuedMapping)
+          {
     LocalizedRangeScanVector chain;  // return value
 
     Pose2 pose = pScan->GetReferencePose(m_pMapper->m_pUseScanBarycenter->GetValue());
@@ -1640,7 +1640,12 @@ namespace karto
       Pose2 candidateScanPose = pCandidateScan->GetReferencePose(m_pMapper->m_pUseScanBarycenter->GetValue());
 
       kt_double squaredDistance = candidateScanPose.GetPosition().SquaredDistance(pose.GetPosition());
-      if (squaredDistance < math::Square(m_pMapper->m_pLoopSearchMaximumDistance->GetValue()) + KT_TOLERANCE)
+      if (continuedMapping)
+      {
+        chain.push_back(pCandidateScan);
+        continue;
+      }
+      if ((squaredDistance < math::Square(m_pMapper->m_pLoopSearchMaximumDistance->GetValue()) + KT_TOLERANCE))
       {
         // a linked scan cannot be in the chain
         if (find(nearLinkedScans.begin(), nearLinkedScans.end(), pCandidateScan) != nearLinkedScans.end())
@@ -2306,7 +2311,7 @@ namespace karto
 	  return true;
   }
 
-  kt_bool Mapper::Process(LocalizedRangeScan* pScan)
+  kt_bool Mapper::Process(LocalizedRangeScan* pScan, kt_bool continuedMapping)
   {
 	  if (pScan != NULL)
 	  {
@@ -2325,7 +2330,7 @@ namespace karto
 		  }
 
 		  // get last scan
-		  LocalizedRangeScan* pLastScan = m_pMapperSensorManager->GetLastScan(pScan->GetSensorName());
+   		  LocalizedRangeScan* pLastScan = m_pMapperSensorManager->GetLastScan(pScan->GetSensorName());
 
 		  // update scans corrected pose based on last correction
 		  if (pLastScan != NULL)
@@ -2335,7 +2340,7 @@ namespace karto
 		  }
 
 		  // test if scan is outside minimum boundary or if heading is larger then minimum heading
-		  if (!HasMovedEnough(pScan, pLastScan))
+		  if (!HasMovedEnough(pScan, pLastScan) and !continuedMapping)
 		  {
 			  return false;
 		  }
@@ -2367,10 +2372,11 @@ namespace karto
 
 			  if (m_pDoLoopClosing->GetValue())
 			  {
+			    std::cout<<"TRY LOOP CLOSING"<<std::endl;
 				  std::vector<Name> deviceNames = m_pMapperSensorManager->GetSensorNames();
 				  const_forEach(std::vector<Name>, &deviceNames)
 				  {
-					  m_pGraph->TryCloseLoop(pScan, *iter);
+					  m_pGraph->TryCloseLoop(pScan, *iter, continuedMapping);
 				  }
 			  }
 		  }
