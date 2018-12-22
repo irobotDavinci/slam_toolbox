@@ -1212,6 +1212,7 @@ bool SlamToolbox::LoadMapperCallback(slam_toolbox::AddMap::Request  &req,
   }
   UpdateMap();
   continue_mapping_ = true;
+  first_measurement_ = true;
 }
 
 /*****************************************************************************/
