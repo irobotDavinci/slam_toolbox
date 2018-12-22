@@ -1640,11 +1640,6 @@ namespace karto
       Pose2 candidateScanPose = pCandidateScan->GetReferencePose(m_pMapper->m_pUseScanBarycenter->GetValue());
 
       kt_double squaredDistance = candidateScanPose.GetPosition().SquaredDistance(pose.GetPosition());
-      if (continuedMapping)
-      {
-        chain.push_back(pCandidateScan);
-        continue;
-      }
       if ((squaredDistance < math::Square(m_pMapper->m_pLoopSearchMaximumDistance->GetValue()) + KT_TOLERANCE))
       {
         // a linked scan cannot be in the chain
