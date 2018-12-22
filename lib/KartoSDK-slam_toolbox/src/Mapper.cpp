@@ -2335,8 +2335,17 @@ namespace karto
 		  // update scans corrected pose based on last correction
 		  if (pLastScan != NULL)
 		  {
-			  Transform lastTransform(pLastScan->GetOdometricPose(), pLastScan->GetCorrectedPose());
-			  pScan->SetCorrectedPose(lastTransform.TransformPose(pScan->GetOdometricPose()));
+                  if (continuedMapping)
+                  {
+                          std::cout<< "SETTING THE TRANSFORM FROM TO LAST KNOWN POSE";
+                          Transform lastTransform(Pose2(0.,0.,0.), pLastScan->GetCorrectedPose());
+                          pScan->SetCorrectedPose(lastTransform.TransformPose(pScan->GetOdometricPose()));
+                  }
+                  else
+                  {
+                          Transform lastTransform(pLastScan->GetOdometricPose(), pLastScan->GetCorrectedPose());
+                          pScan->SetCorrectedPose(lastTransform.TransformPose(pScan->GetOdometricPose()));
+                  }
 		  }
 
 		  // test if scan is outside minimum boundary or if heading is larger then minimum heading
