@@ -2333,7 +2333,7 @@ namespace karto
                   if (continuedMapping)
                   {
                           std::cout<< "SETTING THE TRANSFORM FROM TO LAST KNOWN POSE";
-                          Transform lastTransform(Pose2(0.,0.,0.), pLastScan->GetCorrectedPose());
+                          Transform lastTransform(Pose2(0.,0.,0.), pLastScan->GetOdometricPose());
                           pScan->SetCorrectedPose(lastTransform.TransformPose(pScan->GetOdometricPose()));
                   }
                   else
