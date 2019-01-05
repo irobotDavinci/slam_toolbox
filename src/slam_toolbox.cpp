@@ -265,6 +265,7 @@ void SlamToolbox::SetParams(ros::NodeHandle& private_nh_)
   bool use_response_expansion;
   if(private_nh_.getParam("use_response_expansion", use_response_expansion))
     mapper_->setParamUseResponseExpansion(use_response_expansion);
+  deserialization_completed_ = false;
 }
 
 /*****************************************************************************/
@@ -607,7 +608,7 @@ void SlamToolbox::ProcessInteractiveFeedback(const \
     solver_->GetNodeOrientation(0, first_node_yaw);
 
     quat *= tf::Quaternion(0., 0., node_yaw- 3.14159);
-    quat *= tf::Quaternion(0., 0., 3.14159); 
+    quat *= tf::Quaternion(0., 0., 3.14159);
 
 
     if (lasers_inverted_[scan.header.frame_id])
@@ -830,7 +831,16 @@ bool SlamToolbox::AddScan(karto::LaserRangeFinder* laser,
   // Add the localized range scan to the mapper
   boost::mutex::scoped_lock lock(mapper_mutex_);
   bool processed;
-  if((processed = mapper_->Process(range_scan)))
+  if(deserialization_completed_)
+  {
+    processed = mapper_->ScanMatchAgainstFirstNode(range_scan);
+  }
+  else
+  {
+    processed = mapper_->Process(range_scan);
+  }
+
+  if(processed)
   {
     current_scans_.push_back(*scan);
     karto::Pose2 corrected_pose = range_scan->GetCorrectedPose();
@@ -862,6 +872,10 @@ bool SlamToolbox::AddScan(karto::LaserRangeFinder* laser,
   else
   {
     delete range_scan;
+  }
+  if (deserialization_completed_)
+  {
+    deserialization_completed_ = false;
   }
 
   return processed;
@@ -1211,6 +1225,7 @@ bool SlamToolbox::LoadMapperCallback(slam_toolbox::AddMap::Request  &req,
       }
       lasers_inverted_[laser_frame_] = is_inverted;
     }
+    deserialization_completed_ = true;
   }
   UpdateMap();
 }

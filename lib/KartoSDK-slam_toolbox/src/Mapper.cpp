@@ -2306,6 +2306,32 @@ namespace karto
 	  return true;
   }
 
+  kt_bool Mapper::ScanMatchAgainstFirstNode(LocalizedRangeScan* pScan)
+  {
+    //add first scan of the referent(first == id 0) node to LocalizedRangeScanVector
+    // and scanMatch against the newest scan after deserialization
+    LocalizedRangeScanVector firstScanVec;
+    firstScanVec.push_back(m_pMapperSensorManager->GetScan(0));
+    Matrix3 covariance;
+    covariance.SetToIdentity();
+
+    Pose2 bestPose;
+    m_pSequentialScanMatcher->MatchScan(pScan,
+                                        firstScanVec,
+                                        bestPose,
+                                        covariance);
+    pScan->SetSensorPose(bestPose);
+    m_pMapperSensorManager->AddScan(pScan);
+
+    //add scan to graph
+    m_pGraph->AddVertex(pScan);
+    m_pGraph->AddEdges(pScan, covariance);
+
+    m_pMapperSensorManager->AddRunningScan(pScan);
+    m_pMapperSensorManager->SetLastScan(pScan);
+    return true;
+  }
+  
   kt_bool Mapper::Process(LocalizedRangeScan* pScan)
   {
 	  if (pScan != NULL)

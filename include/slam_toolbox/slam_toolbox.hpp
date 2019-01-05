@@ -177,6 +177,7 @@ private:
   interactive_markers::InteractiveMarkerServer* interactive_server_;
   std::map<int, Eigen::Vector3d> moved_nodes_;
   std::vector<sensor_msgs::LaserScan> current_scans_;
+  bool deserialization_completed_;
 
   // pluginlib
   pluginlib::ClassLoader<karto::ScanSolver> solver_loader_;

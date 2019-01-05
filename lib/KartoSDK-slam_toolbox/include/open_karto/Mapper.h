@@ -1766,6 +1766,7 @@ namespace karto
      */
     void Reset();
 
+    kt_bool ScanMatchAgainstFirstNode(LocalizedRangeScan* pScan);
     /**
      * Process a localized range scan for incorporation into the map.  The scan must
      * be identified with a range finder device.  Once added to a map, the corrected pose information in the
